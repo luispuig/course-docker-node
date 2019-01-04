@@ -1,0 +1,24 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t luispuig/client-tests -f ./client/Dockerfile.dev ./client
+  # - docker build -t luispuig/server-tests -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run luispuig/client-tests npm test -- --coverage
+  # - docker run luispuig/client-server npm test -- --coverage
+
+after_success:
+  - docker build -t luispuig/course-docker-node-client ./client
+  - docker build -t luispuig/course-docker-node-nginx ./nginx
+  - docker build -t luispuig/course-docker-node-server ./server
+  - docker build -t luispuig/course-docker-node-worker ./worker
+  # Log in to the docker CLI with environment variables
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKR_ID" --password-stdin
+  # Take those images and push them to docker hu
+  - docker push luispuig/course-docker-node-client
+  - docker push luispuig/course-docker-node-nginx
+  - docker push luispuig/course-docker-node-server
+  - docker push luispuig/course-docker-node-worker
